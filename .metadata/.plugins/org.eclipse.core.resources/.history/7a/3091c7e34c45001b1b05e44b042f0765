@@ -12,10 +12,11 @@ import lombok.ToString;
 public final class Multiplication {
 
 	private final int factorA;
-	private final int factorB;
+
+	private final intfactorB;
 
 	// Empty constructor for JSON (de)serialization
-	public Multiplication() {
+	protected Multiplication() {
 		this(0, 0);
 	}
 }
