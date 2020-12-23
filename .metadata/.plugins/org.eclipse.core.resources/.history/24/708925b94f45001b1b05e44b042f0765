@@ -63,7 +63,7 @@ class MultiplicationServiceImplTest {
 		boolean attemptResult = multiplicationServiceImpl.checkAttempt(attempt);
 
 		// assert
-		assertThat(attemptResult).isFalse();
+		assertThat(attemptResult).isTrue();
 	}
 
 }
