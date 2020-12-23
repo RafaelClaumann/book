@@ -1,0 +1,15 @@
+package microservices.book.multiplication.service.impl;
+
+import microservices.book.multiplication.service.RandomGeneratorService;
+
+public class RandomGeneratorServiceImpl implements RandomGeneratorService {
+
+	final static int MINIMUM_FACTOR = 11;
+	final static int MAXIMUM_FACTOR = 99;
+	
+	@Override
+	public int generateRandomFactor() {
+		return 0;
+	}
+
+}

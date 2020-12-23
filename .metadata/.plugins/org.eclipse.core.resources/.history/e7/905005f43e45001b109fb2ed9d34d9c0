@@ -1,0 +1,5 @@
+package microservices.book.multiplication.service.impl;
+
+public class RandomGeneratorServiceImpl {
+
+}
