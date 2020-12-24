@@ -56,7 +56,7 @@ class MultiplicationResultAttemptControllerTest {
 		genericParameterizedTest(false);
 	}
 
-	void genericParameterizedTest(final boolean correct) throws IOException, Exception {
+	void genericParameterizedTest(final boolean correct) throws Exception { 
 		given(multiplicationService.checkAttempt(any(MultiplicationResultAttempt.class))).willReturn(correct);
 
 		User user = new User("rafael");
@@ -70,7 +70,6 @@ class MultiplicationResultAttemptControllerTest {
 
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).isEqualTo(jsonResponse.write(new ResultResponse(correct)).getJson());
-
 	}
 
 }
