@@ -23,8 +23,8 @@ final class MultiplicationResultAttemptController {
 	@RequiredArgsConstructor
 	@NoArgsConstructor(force = true)
 	@Getter
-	private static final class ResultResponse {
+	static final class ResultResponse {
 		private final boolean correct;
 	}
-
+	
 }
