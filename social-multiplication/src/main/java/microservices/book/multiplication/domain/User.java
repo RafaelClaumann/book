@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Stores information to identify the user.
+ */
 @RequiredArgsConstructor
 @Getter
 @ToString
