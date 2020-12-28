@@ -7,9 +7,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import microservices.book.multiplication.domain.MultiplicationResultAttempt;
 import microservices.book.multiplication.service.MultiplicationService;
 
@@ -24,17 +21,15 @@ final class MultiplicationResultAttemptController {
 		this.multiplicationService = multiplicationService;
 	}
 
-	@RequiredArgsConstructor
-	@NoArgsConstructor(force = true)
-	@Getter
-	static final class ResultResponse {
-		private final boolean correct;
-	}
-
 	@PostMapping
-	ResponseEntity<ResultResponse> postResult(@RequestBody MultiplicationResultAttempt resultAttempt) {
-		ResultResponse response = new ResultResponse(multiplicationService.checkAttempt(resultAttempt));
-		return ResponseEntity.ok(response);
+	ResponseEntity<MultiplicationResultAttempt> postResult(@RequestBody MultiplicationResultAttempt resultAttempt) {
+		boolean isCorrect = multiplicationService.checkAttempt(resultAttempt);
+		MultiplicationResultAttempt attemptCopy = new MultiplicationResultAttempt(
+				resultAttempt.getUser(),
+				resultAttempt.getMultiplication(),
+				resultAttempt.getResultAttempt(),
+				isCorrect);
+		return ResponseEntity.ok(attemptCopy);
 	}
 
 }
