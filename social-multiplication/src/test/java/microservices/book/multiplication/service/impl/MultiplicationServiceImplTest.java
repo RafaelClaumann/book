@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -90,6 +92,26 @@ class MultiplicationServiceImplTest {
 		// assert
 		assertThat(attemptResult).isFalse();
 		verify(attemptRepository).save(attempt);
+	}
+	
+	@Test
+	void retrieveStatsTest() {
+		Multiplication multiplication = new Multiplication(50, 60);
+		User user = new User("rafael");
+			
+		MultiplicationResultAttempt attempt1 =
+				new MultiplicationResultAttempt(user, multiplication, 3010, false);
+		MultiplicationResultAttempt attempt2 =
+				new MultiplicationResultAttempt(user, multiplication, 3051, false);
+			
+		List<MultiplicationResultAttempt> latestAttempts = Arrays.asList(attempt1, attempt2);
+			
+		given(userRepository.findByAlias("rafael")).willReturn(Optional.empty());
+		given(attemptRepository.findTop5ByUserAliasOrderByIdDesc("rafael")).willReturn(latestAttempts);
+			
+		List<MultiplicationResultAttempt> latestAttemptsResult = multiplicationServiceImpl.getStatsForUser("rafael");
+			
+		assertThat(latestAttemptsResult).isEqualTo(latestAttempts);
 	}
 
 }
