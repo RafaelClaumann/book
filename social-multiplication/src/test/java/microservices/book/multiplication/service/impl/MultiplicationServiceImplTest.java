@@ -102,8 +102,8 @@ class MultiplicationServiceImplTest {
 		MultiplicationResultAttempt attempt1 =
 				new MultiplicationResultAttempt(user, multiplication, 3010, false);
 		MultiplicationResultAttempt attempt2 =
-				new MultiplicationResultAttempt(user, multiplication, 3051, false);
-			
+				new MultiplicationResultAttempt(user, multiplication, 3051, false);		
+		
 		List<MultiplicationResultAttempt> latestAttempts = Arrays.asList(attempt1, attempt2);
 			
 		given(userRepository.findByAlias("rafael")).willReturn(Optional.empty());
