@@ -3,10 +3,12 @@ package microservices.book.multiplication.event;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
  * Handles the communication with the Event Bus.
  */
+@Component
 public class EventDispatcher {
 
 	private RabbitTemplate rabbitTemplate;
