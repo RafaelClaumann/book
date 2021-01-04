@@ -3,6 +3,7 @@ package microservices.book.multiplication.service.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.eq;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,6 +17,8 @@ import org.mockito.MockitoAnnotations;
 import microservices.book.multiplication.domain.Multiplication;
 import microservices.book.multiplication.domain.MultiplicationResultAttempt;
 import microservices.book.multiplication.domain.User;
+import microservices.book.multiplication.event.EventDispatcher;
+import microservices.book.multiplication.event.MultiplicationSolvedEvent;
 import microservices.book.multiplication.repository.MultiplicationResultAttemptRepository;
 import microservices.book.multiplication.repository.UserRepository;
 import microservices.book.multiplication.service.RandomGeneratorService;
@@ -32,6 +35,9 @@ class MultiplicationServiceImplTest {
 	
 	@Mock
 	private UserRepository userRepository;
+	
+	@Mock
+	private EventDispatcher eventDispatcher;
 
 	@BeforeEach
 	public void setUp() {
@@ -40,7 +46,8 @@ class MultiplicationServiceImplTest {
 		multiplicationServiceImpl = new MultiplicationServiceImpl(
 				randomGeneratorService,
 				attemptRepository,
-				userRepository);
+				userRepository,
+				eventDispatcher);
 	}
 
 	@Test
@@ -66,6 +73,9 @@ class MultiplicationServiceImplTest {
 		MultiplicationResultAttempt verifiedAttempt =
 				new MultiplicationResultAttempt(user, multiplication, 3000, true);
 		
+		MultiplicationSolvedEvent event =
+				new MultiplicationSolvedEvent(attempt.getId(), attempt.getUser().getId(), true);
+		
 		given(userRepository.findByAlias("rafael")).willReturn(Optional.empty());
 		
 		// when
@@ -74,6 +84,7 @@ class MultiplicationServiceImplTest {
 		// assert
 		assertThat(attemptResult).isTrue();
 		verify(attemptRepository).save(verifiedAttempt);
+		verify(eventDispatcher).send(eq(event));
 	}
 
 	@Test
@@ -84,6 +95,9 @@ class MultiplicationServiceImplTest {
 		MultiplicationResultAttempt attempt =
 				new MultiplicationResultAttempt(user, multiplication, 7000, false);
 		
+		MultiplicationSolvedEvent event =
+				new MultiplicationSolvedEvent(attempt.getId(), attempt.getUser().getId(), false);
+		
 		given(userRepository.findByAlias("rafael")).willReturn(Optional.empty());
 
 		// when
@@ -92,6 +106,7 @@ class MultiplicationServiceImplTest {
 		// assert
 		assertThat(attemptResult).isFalse();
 		verify(attemptRepository).save(attempt);
+		verify(eventDispatcher).send(eq(event));
 	}
 	
 	@Test
