@@ -2,15 +2,25 @@ package microservices.book.gamification.service.impl;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import microservices.book.gamification.domain.LeaderBoardRow;
+import microservices.book.gamification.repository.ScoreCardRepository;
 import microservices.book.gamification.service.LeaderBoardService;
 
 public class LeaderBoardServiceImpl implements LeaderBoardService {
 
+	private ScoreCardRepository scoreCardRepository;
+	
+	@Autowired
+	public LeaderBoardServiceImpl(final ScoreCardRepository scoreCardRepository) {
+		this.scoreCardRepository = scoreCardRepository;
+	}
+	
 	@Override
 	public List<LeaderBoardRow> getCurrentLeaderBoard() {
-		// TODO Auto-generated method stub
-		return null;
+		List<LeaderBoardRow> findFirst10 = scoreCardRepository.findFirst10();
+		return findFirst10;
 	}
 
 }

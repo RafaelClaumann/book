@@ -99,8 +99,12 @@ public class GameServiceImpl implements GameService {
 
 	@Override
 	public GameStats retrieveStatsForUser(Long userId) {
-		// TODO Auto-generated method stub
-		return null;
+		int totalScoreForUser = scoreCardRepository.getTotalScoreForUser(userId);
+		List<BadgeCard> badgesCards = badgeCardRepository.findByUserIdOrderByBadgeTimestampDesc(userId);
+		List<Badge> badges = badgesCards.stream().map(badge -> badge.getBadge()).collect(Collectors.toList());
+		
+		GameStats gameStats = new GameStats(userId, totalScoreForUser, badges);
+		return gameStats;
 	}
 
 }

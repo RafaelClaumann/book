@@ -104,6 +104,26 @@ class GameServiceImplTest {
 		assertThat(iteration.getBadges()).isEmpty();
 
 	}
+	
+	@Test
+	void retrieveStatsForUserTest() {
+		// given
+		Long userId = 1L;
+		int userTotalScore = 30;
+		BadgeCard card = new BadgeCard(userId, Badge.FIRST_WON);
+		
+		given(scoreCardRepository.getTotalScoreForUser(userId))
+				.willReturn(userTotalScore);
+		given(badgeCardRepository.findByUserIdOrderByBadgeTimestampDesc(userId))
+				.willReturn(Collections.singletonList(card));
+		
+		// when
+		GameStats iteration =  gameService.retrieveStatsForUser(userId);
+		
+		// assert - should score one card and win the badge FIRST_WON
+		assertThat(iteration.getScore()).isEqualTo(userTotalScore);
+		assertThat(iteration.getBadges()).containsOnly(Badge.FIRST_WON);
+	}
 
 	private List<ScoreCard> createNScoreCards(int n, Long userId) {
 		return IntStream.range(0, n).mapToObj(i -> new ScoreCard(userId, (long) i)).collect(Collectors.toList());
