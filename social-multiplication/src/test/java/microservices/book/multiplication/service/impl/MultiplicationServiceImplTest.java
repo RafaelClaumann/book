@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.eq;
+import static org.mockito.ArgumentMatchers.any;
 
 import java.util.Arrays;
 import java.util.List;
@@ -127,6 +128,22 @@ class MultiplicationServiceImplTest {
 		List<MultiplicationResultAttempt> latestAttemptsResult = multiplicationServiceImpl.getStatsForUser("rafael");
 			
 		assertThat(latestAttemptsResult).isEqualTo(latestAttempts);
+	}
+	
+	@Test
+	void retrieveAttemptById() {
+		Multiplication multiplication = new Multiplication(50, 60);
+		User user = new User("rafael");
+			
+		MultiplicationResultAttempt attempt =
+				new MultiplicationResultAttempt(user, multiplication, 3010, false);
+		
+		given(attemptRepository.findById(any(Long.class))).willReturn(Optional.of(attempt));
+		
+		MultiplicationResultAttempt foundAttempt = multiplicationServiceImpl.getResultAttemptById(1L);
+		
+		assertThat(attempt).isEqualTo(foundAttempt);
+		verify(attemptRepository).findById(any(Long.class));
 	}
 
 }

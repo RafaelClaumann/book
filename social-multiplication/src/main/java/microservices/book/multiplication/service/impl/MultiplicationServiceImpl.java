@@ -81,4 +81,10 @@ class MultiplicationServiceImpl implements MultiplicationService {
 	public List<MultiplicationResultAttempt> getStatsForUser(String userAlias) {
 		return attemptRepository.findTop5ByUserAliasOrderByIdDesc(userAlias);
 	}
+
+	@Override
+	public MultiplicationResultAttempt getResultAttemptById(final Long attemptId) {
+		Optional<MultiplicationResultAttempt> attempt = attemptRepository.findById(attemptId);
+		return attempt.orElseThrow(() -> new IllegalArgumentException("Attempt for id:" + attemptId + ", not found!"));
+	}
 }

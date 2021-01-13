@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import java.util.List;
 
@@ -80,7 +81,7 @@ class MultiplicationResultAttemptControllerTest {
 	}
 	
 	@Test
-    public void getUserStats() throws Exception {
+    public void getUserStatsTest() throws Exception {
         User user = new User("john_doe");
         Multiplication multiplication = new Multiplication(50, 70);
         
@@ -97,5 +98,21 @@ class MultiplicationResultAttemptControllerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.getContentAsString()).isEqualTo(jsonResultAttemptList.write(recentAttempts).getJson());
     }
+	
+	@Test
+	public void getResultAttemptByIdTest() throws Exception {
+        User user = new User("john_doe");
+        Multiplication multiplication = new Multiplication(50, 70);
+        
+        MultiplicationResultAttempt attempt =
+        		new MultiplicationResultAttempt(user, multiplication, 3500, true);
+        
+        given(multiplicationService.getResultAttemptById(any(Long.class))).willReturn(attempt);
+        
+        MockHttpServletResponse response = mvc.perform(get("/results/{attemptId}", "1")).andReturn().getResponse(); 
+        
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.getContentAsString()).isEqualTo(jsonResultAttempt.write(attempt).getJson());
+	}
 
 }

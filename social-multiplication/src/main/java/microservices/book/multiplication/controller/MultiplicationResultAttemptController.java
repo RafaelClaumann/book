@@ -1,17 +1,22 @@
 package microservices.book.multiplication.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import microservices.book.multiplication.domain.Multiplication;
 import microservices.book.multiplication.domain.MultiplicationResultAttempt;
+import microservices.book.multiplication.repository.MultiplicationRepository;
+import microservices.book.multiplication.repository.MultiplicationResultAttemptRepository;
 import microservices.book.multiplication.service.MultiplicationService;
 
 @RestController
@@ -39,6 +44,13 @@ final class MultiplicationResultAttemptController {
 	@GetMapping
 	ResponseEntity<List<MultiplicationResultAttempt>> getStatistics(@RequestParam("alias") String alias) {
 		return ResponseEntity.ok(multiplicationService.getStatsForUser(alias));
+	}
+	
+	
+	@GetMapping("/{attemptId}")
+	public ResponseEntity<MultiplicationResultAttempt> getResultById(@PathVariable("attemptId") Long attemptId) {
+		MultiplicationResultAttempt attempt = multiplicationService.getResultAttemptById(attemptId);
+		return ResponseEntity.ok(attempt);
 	}
 
 }
