@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
+import microservices.book.gamification.client.dto.MultiplicationResultAttempt;
+import microservices.book.gamification.client.impl.MultiplicationResultAttemptClientImpl;
 import microservices.book.gamification.domain.BadgeCard;
 import microservices.book.gamification.domain.GameStats;
 import microservices.book.gamification.domain.ScoreCard;
@@ -24,16 +26,21 @@ public class GameServiceImpl implements GameService {
 	private final int POINTS_TO_BRONZE_BADGE = 100;
 	private final int POINTS_TO_SILVER_BADGE = 500;
 	private final int POINTS_TO_GOLD_BADGE = 999;
+	private final int LUCKY_NUMBER = 42;
 
 	private ScoreCardRepository scoreCardRepository;
 
 	private BadgeCardRepository badgeCardRepository;
+	
+	private MultiplicationResultAttemptClientImpl attemptClient;
 
 	@Autowired
 	public GameServiceImpl(final ScoreCardRepository scoreCardRepository,
-			final BadgeCardRepository badgeCardRepository) {
+			final BadgeCardRepository badgeCardRepository,
+			final MultiplicationResultAttemptClientImpl multiplicationClientRestTemplate) {
 		this.scoreCardRepository = scoreCardRepository;
 		this.badgeCardRepository = badgeCardRepository;
+		this.attemptClient = multiplicationClientRestTemplate;
 	}
 
 	@Override
@@ -50,8 +57,18 @@ public class GameServiceImpl implements GameService {
 
 		return GameStats.emptyStats(userId);
 	}
+	
+	@Override
+	public GameStats retrieveStatsForUser(Long userId) {
+		int totalScoreForUser = scoreCardRepository.getTotalScoreForUser(userId);
+		List<BadgeCard> badgesCards = badgeCardRepository.findByUserIdOrderByBadgeTimestampDesc(userId);
+		List<Badge> badges = badgesCards.stream().map(badge -> badge.getBadge()).collect(Collectors.toList());
+		
+		GameStats gameStats = new GameStats(userId, totalScoreForUser, badges);
+		return gameStats;
+	}
 
-	public List<BadgeCard> processForBadges(Long userId, Long attemptId) {
+	private List<BadgeCard> processForBadges(Long userId, Long attemptId) {
 
 		List<BadgeCard> badgeCards = new ArrayList<>();
 
@@ -74,7 +91,11 @@ public class GameServiceImpl implements GameService {
 			BadgeCard firstWonBadge = giveBadgeToUser(Badge.FIRST_WON, userId);
 			badgeCards.add(firstWonBadge);
 		}
-
+		
+		// Lucky number badge
+		MultiplicationResultAttempt attempt = attemptClient.retrieveMultiplicationResultAttemptbyId(attemptId);
+		checkAndGiveLuckyBadge(userId, attempt, badgeCardList).ifPresent(badgeCards::add);
+		
 		return badgeCards;
 	}
 
@@ -85,26 +106,32 @@ public class GameServiceImpl implements GameService {
 		}
 		return Optional.empty();
 	}
+	
+	private Optional<BadgeCard> checkAndGiveLuckyBadge(final Long userId, final MultiplicationResultAttempt attempt,
+			final List<BadgeCard> badgeCardList) {
+		if(containsLuckyFactor(attempt) && !containsBadge(badgeCardList, Badge.LUCKY_NUMBER)) {
+			BadgeCard luckyBadge = giveBadgeToUser(Badge.LUCKY_NUMBER, userId);
+			return Optional.of(luckyBadge);
+		}
+		return Optional.empty();
+	}
 
-	public BadgeCard giveBadgeToUser(final Badge badge, final Long userId) {
+	private BadgeCard giveBadgeToUser(final Badge badge, final Long userId) {
 		BadgeCard badgeCard = new BadgeCard(userId, badge);
 		badgeCardRepository.save(badgeCard);
 		log.info("User with id {} won a new badge: {}", userId, badge);
 		return badgeCard;
 	}
-
-	public boolean containsBadge(List<BadgeCard> badgeCards, Badge badge) {
-		return badgeCards.stream().anyMatch(card -> card.getBadge().equals(badge));
+	
+	private boolean containsLuckyFactor(final MultiplicationResultAttempt attempt) {
+		if(attempt.getMultiplicationFactorA() == LUCKY_NUMBER || attempt.getMultiplicationFactorB() == LUCKY_NUMBER) {
+			return true;
+		}
+		return false;
 	}
-
-	@Override
-	public GameStats retrieveStatsForUser(Long userId) {
-		int totalScoreForUser = scoreCardRepository.getTotalScoreForUser(userId);
-		List<BadgeCard> badgesCards = badgeCardRepository.findByUserIdOrderByBadgeTimestampDesc(userId);
-		List<Badge> badges = badgesCards.stream().map(badge -> badge.getBadge()).collect(Collectors.toList());
-		
-		GameStats gameStats = new GameStats(userId, totalScoreForUser, badges);
-		return gameStats;
+	
+	private boolean containsBadge(final List<BadgeCard> badgeCards, final Badge badge) {
+		return badgeCards.stream().anyMatch(card -> card.getBadge().equals(badge));
 	}
 
 }

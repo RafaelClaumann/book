@@ -11,13 +11,17 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.mockito.BDDMockito.any;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import microservices.book.gamification.client.dto.MultiplicationResultAttempt;
+import microservices.book.gamification.client.impl.MultiplicationResultAttemptClientImpl;
 import microservices.book.gamification.domain.BadgeCard;
 import microservices.book.gamification.domain.GameStats;
 import microservices.book.gamification.domain.ScoreCard;
@@ -34,11 +38,17 @@ class GameServiceImplTest {
 
 	@Mock
 	private BadgeCardRepository badgeCardRepository;
+	
+	@Mock
+	private MultiplicationResultAttemptClientImpl multiplicationClient;
 
 	@BeforeEach
 	void setUp() {
 		MockitoAnnotations.initMocks(this);
-		gameService = new GameServiceImpl(scoreCardRepository, badgeCardRepository);
+		gameService = new GameServiceImpl(scoreCardRepository, badgeCardRepository, multiplicationClient);
+		
+		MultiplicationResultAttempt attempt = new MultiplicationResultAttempt("rafael", 50, 2, 100, true);
+		given(multiplicationClient.retrieveMultiplicationResultAttemptbyId(any(Long.class))).willReturn(attempt);
 	}
 
 	@Test
@@ -57,7 +67,7 @@ class GameServiceImplTest {
 		GameStats interation = gameService.newAttemptForUser(userId, attemptId, true);
 
 		assertThat(interation.getScore()).isEqualTo(scoreCard.getScore());
-		assertThat(interation.getBadges()).contains(Badge.FIRST_WON);
+		assertThat(interation.getBadges()).containsOnly(Badge.FIRST_WON);
 	}
 
 	@Test
@@ -118,11 +128,31 @@ class GameServiceImplTest {
 				.willReturn(Collections.singletonList(card));
 		
 		// when
-		GameStats iteration =  gameService.retrieveStatsForUser(userId);
+		GameStats iteration = gameService.retrieveStatsForUser(userId);
 		
 		// assert - should score one card and win the badge FIRST_WON
 		assertThat(iteration.getScore()).isEqualTo(userTotalScore);
 		assertThat(iteration.getBadges()).containsOnly(Badge.FIRST_WON);
+	}
+	
+	@Test
+	void processCorrectAttemptForLuckyNumberBadgeTest() {
+		Long userId = 1L;
+		Long attemptId = 1L;
+		
+		ScoreCard scoreCard = new ScoreCard(userId, attemptId);
+		MultiplicationResultAttempt attempt = new MultiplicationResultAttempt("Rafael", 42, 1, 42, true);
+		
+		given(scoreCardRepository.findByUserIdOrderByScoreTimestampDesc(userId))
+			.willReturn(Collections.singletonList(scoreCard));
+		given(badgeCardRepository.findByUserIdOrderByBadgeTimestampDesc(userId))
+			.willReturn(Collections.emptyList());		
+		given(multiplicationClient.retrieveMultiplicationResultAttemptbyId(attemptId)).willReturn(attempt);
+		
+		GameStats iteration = gameService.newAttemptForUser(userId, attemptId, true);
+		
+		verify(multiplicationClient).retrieveMultiplicationResultAttemptbyId(attemptId);
+		assertThat(iteration.getBadges()).isEqualTo(Arrays.asList(Badge.FIRST_WON, Badge.LUCKY_NUMBER));
 	}
 
 	private List<ScoreCard> createNScoreCards(int n, Long userId) {
