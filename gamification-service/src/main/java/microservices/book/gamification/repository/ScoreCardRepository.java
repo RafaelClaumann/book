@@ -18,10 +18,10 @@ public interface ScoreCardRepository extends JpaRepository<ScoreCard, Long> {
 	 * @param userId the id of the user for which the total score should be retrieved
 	 * @return the total score for the given user
 	 */
-	@Query("SELECT SUM(s.score)"
-			+ "FROM microservices.book.gamification.domain.ScoreCard s"
+	@Query("SELECT SUM(s.score) FROM "
+			+ "microservices.book.gamification.domain.ScoreCard s "
 			+ "WHERE s.userId = :userId "
-			+ "GROUPBY s.userId")
+			+ "GROUP BY s.userId")
 	int getTotalScoreForUser(@Param("userId") final Long userId);
 
 	/**
