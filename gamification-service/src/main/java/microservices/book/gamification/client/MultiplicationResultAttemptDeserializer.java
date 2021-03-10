@@ -20,8 +20,10 @@ public class MultiplicationResultAttemptDeserializer extends JsonDeserializer<Mu
 	@Override
 	public MultiplicationResultAttempt deserialize(JsonParser jsonParser, DeserializationContext ctxt)
 			throws IOException, JsonProcessingException {
+		
 		ObjectCodec oc = jsonParser.getCodec();
 		JsonNode node = oc.readTree(jsonParser);
+		
 		return new MultiplicationResultAttempt(
 				node.get("user").get("alias").asText(),
 				node.get("multiplication").get("factorA").asInt(),
